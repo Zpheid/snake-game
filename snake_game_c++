@@ -1,0 +1,182 @@
+#include <iostream>
+#include <iomanip>
+#include <stdlib.h>
+#include <conio.h>
+#include <windows.h>
+using namespace std;
+
+void Setup();
+void Draw();
+void Input();
+void Logic();
+
+bool gameOver;
+const int width = 20;
+const int height = 20;
+int X, Y, fruitX, fruitY, score;
+int tailX[100], tailY[100]; //arrays to keep track of tail movement
+int nTail; //specify length of tail
+
+enum eDirection {STOP, LEFT, RIGHT, UP, DOWN}; //enum declaration
+eDirection dir; //declaring user-input declaration of eDirection into variable dir
+
+int main() {
+  
+  Setup();
+  while (!gameOver) {
+    Draw();
+    Input();  
+    Logic();
+    Sleep(17); //delay screen refresh rate
+  }
+return 0;
+}
+
+void Setup() {
+  gameOver = false;
+  dir = STOP;
+  //setting up starting pos of snake 
+  X = width / 2;
+  Y = height / 2;
+  fruitX = rand() % width; //generating random x value for fruit 
+  fruitY = rand() % height; //generating random y value for fruit 
+  score = 0;
+}
+
+void Draw() {
+  system("cls"); // clears screen every iteration, system("clear") for Linux
+//top horizontal border
+  for (int i = 0; i < width + 2; i++) {
+    cout << "#";
+  }
+  cout << endl;
+
+//vertical side borders; i is height, j is width 
+  for (int i = 0; i < height; i++) 
+  {
+    for (int j = 0; j < width; j++) 
+    {
+      if (j == 0) {
+        cout << "#";
+      }
+      if (i == Y && j == X) {
+        cout << "O";
+      }
+      else if (i == fruitY && j == fruitX) 
+      {
+        cout << "F";
+      }
+      else 
+      {
+        bool print = false;
+        for (int k = 0; k < nTail; k++) 
+        {
+          if (tailX[k] == j && tailY[k] == i)
+          {
+            cout << "o";
+            print = true;
+          }
+        }
+        if (!print) {
+          cout << " ";
+        }
+      }
+
+      if (j == width - 1) {
+        cout << "#";
+      }
+    }
+    cout << endl;
+  }
+
+  for (int i = 0; i < width + 2; i++) {
+    cout << "#";
+  }
+  cout << endl;
+  cout << "Score: " << score << endl;
+  //cout << "fruitX coords: " << fruitX << endl;
+  //cout << "fruitY coords: " << fruitY << endl;
+}
+
+void Input() 
+{
+  if (kbhit()) 
+  {
+    switch (getch()) 
+    {
+    case 'a':
+      dir = LEFT;
+      break;
+    case 'd':
+      dir = RIGHT;
+      break;
+    case 'w':
+      dir = UP;
+      break;
+    case 's':
+      dir = DOWN;
+      break;
+    case 'p':
+      gameOver = true;
+      break;
+    }
+  }
+}
+
+void Logic() 
+{
+  int prevX = tailX[0];
+  int prevY = tailY[0];
+  int prev2X, prev2Y;
+  tailX[0] = X;
+  tailY[0] = Y;
+
+  for (int i = 1; i < nTail; i++) 
+  {
+    prev2X = tailX[i];
+    prev2Y = tailY[i];
+    tailX[i] = prevX;
+    tailY[i] = prevY;
+    prevX = prev2X;
+    prevY = prev2Y;
+  }
+
+  switch (dir) 
+  {
+  case LEFT: 
+    X--;
+    break;
+  case RIGHT:
+    X++;
+    break;
+  case UP:
+    Y--;
+    break;
+  case DOWN:
+    Y++;
+    break;
+  default:
+    break;
+  }
+  //when snake hits the walls, gameover 
+  if (X > width || X < 0 || Y > height || Y < 0) 
+  {
+    gameOver = true;
+  } 
+  //when snake head hits tail, gameover 
+  for (int i = 1; i < nTail; i++) {
+    if (tailX[i] == X && tailY[i] == Y) 
+    {
+      gameOver = true;
+    }
+  }
+
+
+  if (X == fruitX && Y == fruitY) 
+  {
+    score += 10;
+    fruitX = rand() % width; //generating random x value for fruit 
+    fruitY = rand() % height; //generating random y value for fruit 
+    nTail++;
+  }
+}
